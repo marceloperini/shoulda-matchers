@@ -1,10 +1,84 @@
 module Shoulda
   module Matchers
     module ActiveRecord
+      # The `have_one_attached` matcher is used to test a `has_one_attached`
+      # association exists on your model.
+      #
+      #   class Person < ApplicationRecord
+      #     has_one_attached :file
+      #   end
+      #
+      #   # RSpec
+      #   RSpec.describe Person, type: :model do
+      #     it { is_expected.to have_one_attached(:file) }
+      #   end
+      #
+      #   # Minitest (Shoulda)
+      #   class PersonTest < ActiveSupport::TestCase
+      #     should have_one(:file)
+      #   end
+      #
+      # ##### dependent
+      #
+      # Use `dependent` to assert that the `:dependent` option was specified.
+      #
+      #     class Person < ApplicationRecord
+      #       has_one_attached :file, dependent: :purge_later
+      #     end
+      #
+      #     # RSpec
+      #     RSpec.describe Person, type: :model do
+      #       it { is_expected.to have_one_attached(:file).dependent(:purge_later) }
+      #     end
+      #
+      #     # Minitest (Shoulda)
+      #     class PersonTest < ActiveSupport::TestCase
+      #       should have_one_attached(:file).dependent(:purge_later)
+      #     end
+      #
+      # @return [HaveAttachedMatcher]
+      #
       def have_one_attached(name)
         HaveAttachedMatcher.new(:one, name)
       end
 
+      # The `have_many_attached` matcher is used to test a `have_many_attached`
+      # association exists on your model.
+      #
+      #   class Person < ApplicationRecord
+      #     has_many_attached :files
+      #   end
+      #
+      #   # RSpec
+      #   RSpec.describe Person, type: :model do
+      #     it { is_expected.to have_many_attached(:files) }
+      #   end
+      #
+      #   # Minitest (Shoulda)
+      #   class PersonTest < ActiveSupport::TestCase
+      #     should have_many_attached(:files)
+      #   end
+      #
+      # ##### dependent
+      #
+      # Use `dependent` to assert that the `:dependent` option was specified.
+      #
+      #     class Person < ApplicationRecord
+      #       has_many_attached :files, dependent: :purge_later
+      #     end
+      #
+      #     # RSpec
+      #     RSpec.describe Person, type: :model do
+      #       it { is_expected.to have_many_attached(:files).dependent(:purge_later) }
+      #     end
+      #
+      #     # Minitest (Shoulda)
+      #     class PersonTest < ActiveSupport::TestCase
+      #       should have_many_attached(:files).dependent(:purge_later)
+      #     end
+      #
+      # @return [HaveAttachedMatcher]
+      #
       def have_many_attached(name)
         HaveAttachedMatcher.new(:many, name)
       end
@@ -16,6 +90,16 @@ module Shoulda
         def initialize(macro, name)
           @macro = macro
           @name = name
+          @submatchers = []
+        end
+
+        def dependent(dependent)
+          add_submatcher(
+            AssociationMatchers::DependentMatcher,
+            dependent,
+            name,
+          )
+          self
         end
 
         def description
@@ -48,9 +132,20 @@ Did not expect #{expectation}, but it does.
             eager_loading_scope_exists?
         end
 
-        private
+        protected
 
-        attr_reader :subject, :macro
+        attr_reader :submatchers, :subject, :macro
+
+        def add_submatcher(matcher_class, *args)
+          remove_submatcher(matcher_class)
+          submatchers << matcher_class.new(*args)
+        end
+
+        def remove_submatcher(matcher_class)
+          submatchers.delete_if do |submatcher|
+            submatcher.is_a?(matcher_class)
+          end
+        end
 
         def reader_attribute_exists?
           if subject.respond_to?(name)
