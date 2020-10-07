@@ -109,6 +109,18 @@ Expected User to have a has_one_attached called avatar, but this could not be pr
             MESSAGE
           end
         end
+
+        context 'when have dependent purge_later' do
+          it 'matches' do
+            record = record_having_one_attached(:avatar)
+
+            expect { have_one_attached(:avatar).dependent(:purge_later) }
+              .not_to match_against(record)
+              .and_fail_with <<-MESSAGE
+Expected User to have a has_one_attached called avatar, but this not
+            MESSAGE
+          end
+        end
       end
     end
 

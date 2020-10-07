@@ -129,7 +129,8 @@ Did not expect #{expectation}, but it does.
             writer_attribute_exists? &&
             attachments_association_exists? &&
             blobs_association_exists? &&
-            eager_loading_scope_exists?
+            eager_loading_scope_exists? &&
+            submatchers_match?
         end
 
         protected
@@ -230,6 +231,16 @@ Did not expect #{expectation}, but it does.
             @failure = "#{model_class.name} does not have a " \
                        ":with_attached_#{name} scope."
             false
+          end
+        end
+
+        def submatchers_match?
+          failing_submatchers.empty?
+        end
+
+        def failing_submatchers
+          @_failing_submatchers ||= submatchers.select do |matcher|
+            !matcher.matches?(subject)
           end
         end
 
