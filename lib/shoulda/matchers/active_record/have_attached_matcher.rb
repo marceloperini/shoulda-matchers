@@ -91,14 +91,18 @@ module Shoulda
           @macro = macro
           @name = name
           @submatchers = []
+          @dependent = nil
         end
 
-        def dependent(dependent)
-          add_submatcher(
-            AssociationMatchers::DependentMatcher,
-            dependent,
-            name,
-          )
+        def dependent(dependent_value)
+          @dependent = dependent_value
+
+          # add_submatcher(
+          #   HaveAttachedMatchers::DependentMatcher,
+          #   dependent,
+          #   name,
+          # )
+
           self
         end
 
@@ -129,13 +133,12 @@ Did not expect #{expectation}, but it does.
             writer_attribute_exists? &&
             attachments_association_exists? &&
             blobs_association_exists? &&
-            eager_loading_scope_exists? &&
-            submatchers_match?
+            eager_loading_scope_exists?
         end
 
         protected
 
-        attr_reader :submatchers, :subject, :macro
+        attr_reader :submatchers, :subject, :macro, :dependent
 
         def add_submatcher(matcher_class, *args)
           remove_submatcher(matcher_class)
@@ -212,7 +215,7 @@ Did not expect #{expectation}, but it does.
             ).
               through(attachments_association_name).
               class_name('ActiveStorage::Blob').
-              source(:blob)
+              source(:blob).dependent(dependent)
         end
 
         def blobs_association_name

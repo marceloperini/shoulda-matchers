@@ -23,7 +23,11 @@ require "shoulda/matchers/active_record/accept_nested_attributes_for_matcher"
 require "shoulda/matchers/active_record/define_enum_for_matcher"
 require "shoulda/matchers/active_record/uniqueness"
 require "shoulda/matchers/active_record/validate_uniqueness_of_matcher"
-require "shoulda/matchers/active_record/have_attached_matcher"
+require 'shoulda/matchers/active_record/have_attached_matcher'
+require 'shoulda/matchers/active_record/have_attached_matchers'
+require 'shoulda/matchers/active_record/have_attached_matchers/model_reflector'
+require 'shoulda/matchers/active_record/have_attached_matchers/dependent_matcher'
+require 'shoulda/matchers/active_record/have_attached_matchers/option_verifier'
 
 module Shoulda
   module Matchers
